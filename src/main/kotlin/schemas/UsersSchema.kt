@@ -1,29 +1,16 @@
 package com.jammes.schemas
 
+import com.jammes.models.Users
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
 
 @Serializable
 data class ExposedUser(val name: String, val bornAt: String)
 
 class UserService(database: Database) {
-    object Users : Table() {
-        val id = integer("id").autoIncrement()
-        val name = varchar("name", 10)
-        val bornAt = varchar("bornAt", 10)
-
-        override val primaryKey = PrimaryKey(id)
-    }
-
-    init {
-        transaction(database) {
-            SchemaUtils.create(Users)
-        }
-    }
 
     suspend fun create(user: ExposedUser): Int = dbQuery {
         Users.insert {

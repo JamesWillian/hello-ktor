@@ -1,33 +1,22 @@
 package com.jammes.schemas
 
+import com.jammes.models.Events
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
-import org.jetbrains.exposed.sql.transactions.transaction
 import kotlinx.coroutines.Dispatchers
 
 @Serializable
-data class ExposedEvent(val title: String, val description: String, val date: String, val time: String, val location: String)
+data class ExposedEvent(
+    val title: String,
+    val description: String,
+    val date: String,
+    val time: String,
+    val location: String
+)
 
 class EventService(database: Database) {
-
-    object Events : Table() {
-        val id = integer("id").autoIncrement()
-        val title = varchar("title", 100)
-        val description = text("description")
-        val date = varchar("date", 10)
-        val time = varchar("date", 5)
-        val location = varchar("location", 255)
-
-        override val primaryKey = PrimaryKey(id)
-    }
-
-    init {
-        transaction(database) {
-            SchemaUtils.create(Events)
-        }
-    }
 
     suspend fun create(event: ExposedEvent): Int = dbQuery {
         Events.insert {
@@ -49,9 +38,36 @@ class EventService(database: Database) {
                         it[Events.description],
                         it[Events.date],
                         it[Events.time],
-                        it[Events.location])
+                        it[Events.location]
+                    )
                 }
                 .singleOrNull()
+        }
+    }
+
+    suspend fun readAll(
+        event: String? = null,
+        startAt: String? = null,
+        endAt: String? = null
+    ): List<ExposedEvent?> {
+        return dbQuery {
+            Events.selectAll()
+                .where {
+                    ((Events.title like ("%$event%")) or (Events.description like ("%$event%")))
+                    ((Events.date greaterEq startAt.toString()) and
+                            (Events.date lessEq endAt.toString()))
+                }
+                .orderBy(Events.date)
+                .limit(10)
+                .map {
+                    ExposedEvent(
+                        it[Events.title],
+                        it[Events.description],
+                        it[Events.date],
+                        it[Events.time],
+                        it[Events.location]
+                    )
+                }
         }
     }
 
