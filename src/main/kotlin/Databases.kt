@@ -1,8 +1,8 @@
 package com.jammes
 
 import com.jammes.database.DatabaseFactory
-import com.jammes.models.Events
-import com.jammes.models.Users
+import com.jammes.database.tables.Events
+import com.jammes.database.tables.Users
 import io.ktor.server.application.*
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction

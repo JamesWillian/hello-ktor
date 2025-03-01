@@ -1,6 +1,6 @@
 package com.jammes.schemas
 
-import com.jammes.models.Users
+import com.jammes.database.tables.Users
 import kotlinx.coroutines.Dispatchers
 import kotlinx.serialization.Serializable
 import org.jetbrains.exposed.sql.*
@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 @Serializable
 data class ExposedUser(val name: String, val bornAt: String)
 
-class UserService(database: Database) {
+class UserService() {
 
     suspend fun create(user: ExposedUser): Int = dbQuery {
         Users.insert {

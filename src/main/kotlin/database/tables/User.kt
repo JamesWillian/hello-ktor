@@ -1,4 +1,4 @@
-package com.jammes.models
+package com.jammes.database.tables
 
 import org.jetbrains.exposed.sql.Table
 

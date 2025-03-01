@@ -1,44 +1,41 @@
 package com.jammes.schemas
 
-import com.jammes.models.Events
-import kotlinx.serialization.Serializable
+import com.jammes.database.tables.Events
+import com.jammes.database.tables.Users
+import com.jammes.models.EventDetail
+import com.jammes.models.EventRequest
+import com.jammes.models.EventSummary
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlinx.coroutines.Dispatchers
 
-@Serializable
-data class ExposedEvent(
-    val title: String,
-    val description: String,
-    val date: String,
-    val time: String,
-    val location: String
-)
+class EventService() {
 
-class EventService(database: Database) {
-
-    suspend fun create(event: ExposedEvent): Int = dbQuery {
+    suspend fun create(event: EventRequest): Int = dbQuery {
         Events.insert {
             it[title] = event.title
             it[description] = event.description
             it[date] = event.date
             it[time] = event.time
             it[location] = event.location
+            it[createdBy] = event.createdBy
         }[Events.id]
     }
 
-    suspend fun read(id: Int): ExposedEvent? {
+    suspend fun read(id: Int): EventDetail? {
         return dbQuery {
-            Events.selectAll()
+            (Events innerJoin Users)
+                .selectAll()
                 .where { Events.id eq id }
                 .map {
-                    ExposedEvent(
-                        it[Events.title],
-                        it[Events.description],
-                        it[Events.date],
-                        it[Events.time],
-                        it[Events.location]
+                    EventDetail(
+                        title = it[Events.title],
+                        description = it[Events.description],
+                        date = it[Events.date],
+                        time = it[Events.time],
+                        location = it[Events.location],
+                        creatorName = it[Users.name]
                     )
                 }
                 .singleOrNull()
@@ -49,36 +46,49 @@ class EventService(database: Database) {
         event: String? = null,
         startAt: String? = null,
         endAt: String? = null
-    ): List<ExposedEvent?> {
+    ): List<EventSummary?> {
         return dbQuery {
-            Events.selectAll()
-                .where {
-                    ((Events.title like ("%$event%")) or (Events.description like ("%$event%")))
-                    ((Events.date greaterEq startAt.toString()) and
-                            (Events.date lessEq endAt.toString()))
+            Events.selectAll().apply {
+                if (!event.isNullOrEmpty()) {
+                    andWhere {
+                        ((Events.title like ("%$event%")) or (Events.description like ("%$event%")))
+                    }
                 }
+
+                if (!startAt.isNullOrEmpty()) {
+                    andWhere {
+                        (Events.date greaterEq startAt.toString())
+                    }
+                }
+                
+                if (!endAt.isNullOrEmpty()) {
+                    andWhere {
+                        (Events.date lessEq endAt.toString())
+                    }
+                }
+            }
                 .orderBy(Events.date)
                 .limit(10)
                 .map {
-                    ExposedEvent(
+                    EventSummary(
+                        it[Events.id],
                         it[Events.title],
-                        it[Events.description],
                         it[Events.date],
-                        it[Events.time],
                         it[Events.location]
                     )
                 }
+
         }
     }
 
-    suspend fun update(id: Int, event: ExposedEvent) {
-        dbQuery {
+    suspend fun update(id: Int, event: EventRequest) {
+        dbQuery { //Corrigir quando não passar algum campo
             Events.update({ Events.id eq id }) {
-                it[title] = event.title
-                it[description] = event.description
-                it[date] = event.date
-                it[time] = event.time
-                it[location] = event.location
+                if (event.title.isNotEmpty()) it[title] = event.title
+                if (event.description.isNotEmpty()) it[description] = event.description
+                if (event.date.isNotEmpty()) it[date] = event.date
+                if (event.time.isNotEmpty()) it[time] = event.time
+                if (event.location.isNotEmpty()) it[location] = event.location
             }
         }
     }

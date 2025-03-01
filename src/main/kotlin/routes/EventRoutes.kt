@@ -1,7 +1,7 @@
 package com.jammes.routes
 
+import com.jammes.models.EventRequest
 import com.jammes.schemas.EventService
-import com.jammes.schemas.ExposedEvent
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
@@ -15,7 +15,7 @@ import io.ktor.server.routing.route
 fun Route.eventRoutes(eventService: EventService) {
     route("/events") {
         post {
-            val event = call.receive<ExposedEvent>()
+            val event = call.receive<EventRequest>()
             val id = eventService.create(event)
             call.respond(HttpStatusCode.Created, id)
         }
@@ -31,16 +31,16 @@ fun Route.eventRoutes(eventService: EventService) {
         }
 
         get {
-            val event = call.request.queryParameters["event"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val startAt = call.request.queryParameters["startAt"] ?: return@get call.respond(HttpStatusCode.BadRequest)
-            val endAt = call.request.queryParameters["endAt"] ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val event = call.request.queryParameters["event"]
+            val startAt = call.request.queryParameters["startAt"]
+            val endAt = call.request.queryParameters["endAt"]
             val eventList = eventService.readAll(event, startAt, endAt)
             call.respond(HttpStatusCode.OK, eventList)
         }
 
         put("/{id}") {
             val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.respond(HttpStatusCode.BadRequest)
-            val event = call.receive<ExposedEvent>()
+            val event = call.receive<EventRequest>()
             eventService.update(id, event)
             call.respond(HttpStatusCode.OK)
         }
