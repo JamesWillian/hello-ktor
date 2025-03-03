@@ -1,6 +1,6 @@
 package com.jammes.routes
 
-import com.jammes.schemas.ExposedUser
+import com.jammes.models.UserRequest
 import com.jammes.schemas.UserService
 import io.ktor.http.HttpStatusCode
 import io.ktor.server.request.receive
@@ -16,7 +16,7 @@ fun Route.userRoutes(userService: UserService) {
     route("/users") {
         // Create user
         post {
-            val user = call.receive<ExposedUser>()
+            val user = call.receive<UserRequest>()
             val id = userService.create(user)
             call.respond(HttpStatusCode.Created, id)
         }
@@ -35,7 +35,7 @@ fun Route.userRoutes(userService: UserService) {
         // Update user
         put("/{id}") {
             val id = call.parameters["id"]?.toInt() ?: throw IllegalArgumentException("Invalid ID")
-            val user = call.receive<ExposedUser>()
+            val user = call.receive<UserRequest>()
             userService.update(id, user)
             call.respond(HttpStatusCode.OK)
         }

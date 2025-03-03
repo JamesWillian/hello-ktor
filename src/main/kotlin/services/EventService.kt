@@ -10,7 +10,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import kotlinx.coroutines.Dispatchers
 
-class EventService() {
+class EventService {
 
     suspend fun create(event: EventRequest): Int = dbQuery {
         Events.insert { insert ->

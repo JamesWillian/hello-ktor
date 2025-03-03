@@ -1,6 +1,7 @@
 package com.jammes
 
 import com.jammes.database.DatabaseFactory
+import com.jammes.database.tables.EventRegistrations
 import com.jammes.database.tables.Events
 import com.jammes.database.tables.Users
 import io.ktor.server.application.*
@@ -13,7 +14,7 @@ fun Application.configureDatabases() {
 
     transaction(DatabaseFactory.getDatabase())
     {
-        SchemaUtils.create(Users, Events)
+        SchemaUtils.create(Users, Events, EventRegistrations)
     }
 
 }
