@@ -9,14 +9,13 @@ import io.ktor.server.auth.jwt.*
 fun Application.configureSecurity() {
     val audience = "ktor_users"
     val domain = "ktor-server"
-    val secret = "jameswillianbatistalopesdamata" //Teste - Mudar para variavel de ambiente
 
     authentication {
         jwt {
             realm = "ktor sample app"
             verifier(
                 JWT
-                    .require(Algorithm.HMAC256(secret))
+                    .require(Algorithm.HMAC256(jwtSecret))
                     .withAudience(audience)
                     .withIssuer(domain)
                     .build()
