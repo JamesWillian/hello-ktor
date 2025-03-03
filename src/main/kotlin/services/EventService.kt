@@ -1,4 +1,4 @@
-package com.jammes.schemas
+package com.jammes.services
 
 import com.jammes.database.tables.Events
 import com.jammes.database.tables.Users

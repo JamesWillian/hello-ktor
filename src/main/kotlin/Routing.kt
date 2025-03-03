@@ -1,10 +1,11 @@
 package com.jammes
 
+import com.jammes.routes.authRoutes
 import com.jammes.routes.eventRegistrationRoutes
 import com.jammes.routes.eventRoutes
 import com.jammes.routes.userRoutes
-import com.jammes.schemas.EventService
-import com.jammes.schemas.UserService
+import com.jammes.services.EventService
+import com.jammes.services.UserService
 import com.jammes.services.EventRegistrationService
 import io.ktor.server.application.*
 import io.ktor.server.response.*
@@ -26,6 +27,7 @@ fun Application.configureRouting() {
     val eventRegistrationService = EventRegistrationService()
 
     routing {
+        authRoutes()
         userRoutes(userService)
         eventRoutes(eventService)
         eventRegistrationRoutes(eventRegistrationService)
