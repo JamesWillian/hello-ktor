@@ -8,6 +8,7 @@ import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
+import io.ktor.server.routing.patch
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
@@ -21,7 +22,7 @@ fun Route.eventRoutes(eventService: EventService) {
         }
 
         get("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest)
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@get call.respond(HttpStatusCode.BadRequest, "ID inválido")
             val event = eventService.read(id)
             if (event != null) {
                 call.respond(HttpStatusCode.OK, event)
@@ -39,14 +40,22 @@ fun Route.eventRoutes(eventService: EventService) {
         }
 
         put("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.respond(HttpStatusCode.BadRequest)
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@put call.respond(HttpStatusCode.BadRequest, "ID inválido")
             val event = call.receive<EventRequest>()
             eventService.update(id, event)
             call.respond(HttpStatusCode.OK)
         }
 
+        patch("/{id}") {
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@patch call.respond(HttpStatusCode.BadRequest, "ID inválido")
+            val eventUpdates = call.receive<EventRequest>()
+
+            eventService.updatePartial(id, eventUpdates)
+            call.respond(HttpStatusCode.OK)
+        }
+
         delete("/{id}") {
-            val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respond(HttpStatusCode.BadRequest)
+            val id = call.parameters["id"]?.toIntOrNull() ?: return@delete call.respond(HttpStatusCode.BadRequest, "ID inválido")
             eventService.delete(id)
             call.respond(HttpStatusCode.OK)
         }

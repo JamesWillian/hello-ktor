@@ -4,10 +4,10 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class EventRequest(
-    val title: String,
-    val description: String,
-    val date: String,
-    val time: String,
-    val location: String,
-    val createdBy: Int
+    val title: String? = null,
+    val description: String? = null,
+    val date: String? = null,
+    val time: String? = null,
+    val location: String? = null,
+    val createdBy: Int? = null
 )

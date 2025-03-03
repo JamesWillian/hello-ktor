@@ -13,13 +13,13 @@ import kotlinx.coroutines.Dispatchers
 class EventService() {
 
     suspend fun create(event: EventRequest): Int = dbQuery {
-        Events.insert {
-            it[title] = event.title
-            it[description] = event.description
-            it[date] = event.date
-            it[time] = event.time
-            it[location] = event.location
-            it[createdBy] = event.createdBy
+        Events.insert { insert ->
+            insert[title] = event.title!!
+            insert[description] = event.description!!
+            insert[date] = event.date!!
+            insert[time] = event.time!!
+            insert[location] = event.location!!
+            insert[createdBy] = event.createdBy!!
         }[Events.id]
     }
 
@@ -28,14 +28,14 @@ class EventService() {
             (Events innerJoin Users)
                 .selectAll()
                 .where { Events.id eq id }
-                .map {
+                .map { get ->
                     EventDetail(
-                        title = it[Events.title],
-                        description = it[Events.description],
-                        date = it[Events.date],
-                        time = it[Events.time],
-                        location = it[Events.location],
-                        creatorName = it[Users.name]
+                        title = get[Events.title],
+                        description = get[Events.description],
+                        date = get[Events.date],
+                        time = get[Events.time],
+                        location = get[Events.location],
+                        creatorName = get[Users.name]
                     )
                 }
                 .singleOrNull()
@@ -69,12 +69,12 @@ class EventService() {
             }
                 .orderBy(Events.date)
                 .limit(10)
-                .map {
+                .map { get ->
                     EventSummary(
-                        it[Events.id],
-                        it[Events.title],
-                        it[Events.date],
-                        it[Events.location]
+                        get[Events.id],
+                        get[Events.title],
+                        get[Events.date],
+                        get[Events.location]
                     )
                 }
 
@@ -82,16 +82,29 @@ class EventService() {
     }
 
     suspend fun update(id: Int, event: EventRequest) {
-        dbQuery { //Corrigir quando não passar algum campo
-            Events.update({ Events.id eq id }) {
-                if (event.title.isNotEmpty()) it[title] = event.title
-                if (event.description.isNotEmpty()) it[description] = event.description
-                if (event.date.isNotEmpty()) it[date] = event.date
-                if (event.time.isNotEmpty()) it[time] = event.time
-                if (event.location.isNotEmpty()) it[location] = event.location
+        dbQuery {
+            Events.update({ Events.id eq id }) { update ->
+                update[title] = event.title!!
+                update[description] = event.description!!
+                update[date] = event.date!!
+                update[time] = event.time!!
+                update[location] = event.location!!
             }
         }
     }
+
+    suspend fun updatePartial(id: Int, event: EventRequest) {
+        dbQuery {
+            Events.update({ Events.id eq id }) { update ->
+                event.title?.let { update[title] = it }
+                event.description?.let { update[description] = it }
+                event.date?.let { update[date] = it }
+                event.time?.let { update[time] = it }
+                event.location?.let { update[location] = it }
+            }
+        }
+    }
+
 
     suspend fun delete(id: Int) {
         dbQuery {
